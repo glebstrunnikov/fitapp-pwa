@@ -5,6 +5,7 @@
   import { useMainStore } from "@/stores/mainStore";
 
   import ExCard from "@/components/workout-cards/ExCard.vue";
+  import BaseBtn from "@/components/ui/BaseBtn.vue";
 
   const router = useRouter();
 
@@ -86,5 +87,12 @@
       :active="activeIndex === i"
       @edit="toggleActive(i)"
     />
+    <BaseBtn
+      :disabled="!store.programChanged"
+      @click="store.saveProgram()"
+      class="w-full mt-2 py-3 text-lg disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      Save
+    </BaseBtn>
   </div>
 </template>

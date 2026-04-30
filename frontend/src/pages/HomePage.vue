@@ -1,26 +1,45 @@
 <script setup lang="ts">
-  import { computed } from "vue";
+  import { ref, toRaw } from "vue";
   import { useMainStore } from "@/stores/mainStore";
-  import { mockExes } from "@/mock-data/exes";
-  import WorkoutCard from "@/components/workout-cards/WorkoutCard.vue";
   import WorkoutPlanCard from "@/components/workout-cards/WorkoutPlanCard.vue";
+  import BaseBtn from "@/components/ui/BaseBtn.vue";
+  import type { WorkoutPlanData } from "@/types/workouts";
 
   const store = useMainStore();
 
-  function getExes(exIds: string[]) {
-    return exIds.map((id) => mockExes.find((ex) => ex.id === id)!);
+  const editMode = ref(false);
+  let programSnapshot: WorkoutPlanData[] | null = null;
+
+  function enterEditMode() {
+    programSnapshot = structuredClone(toRaw(store.program));
+    editMode.value = true;
   }
 
-  const singlePlanWorkouts = computed(() =>
-    store.program?.length === 1 ? store.program[0].workouts : null,
-  );
+  async function saveEdit() {
+    await store.saveProgram();
+    editMode.value = false;
+    programSnapshot = null;
+  }
 
-  function allPlanExIds(planIndex: number) {
-    const ids = new Set<string>();
-    store.program![planIndex].workouts.forEach((w) =>
-      w.exes.forEach((e) => ids.add(e.exId)),
-    );
-    return [...ids];
+  function cancelEdit() {
+    if (programSnapshot) {
+      store.program = programSnapshot;
+    }
+    editMode.value = false;
+    programSnapshot = null;
+  }
+
+  function addPlan() {
+    store.program?.push({
+      workoutPlanId: crypto.randomUUID(),
+      workouts: [],
+    });
+  }
+
+  function handleDeletePlan(planId: string) {
+    if (!store.program) return;
+    const idx = store.program.findIndex((p) => p.workoutPlanId === planId);
+    if (idx !== -1) store.program.splice(idx, 1);
   }
 </script>
 
@@ -30,23 +49,41 @@
       <p class="text-center text-gray-400 mt-8">Loading…</p>
     </template>
 
-    <template v-else-if="store.program.length > 1">
+    <template v-else>
+      <div class="flex justify-between mb-2">
+        <router-link to="/exes">
+          <BaseBtn variant="ghost" class="text-sm py-1">Exes</BaseBtn>
+        </router-link>
+        <div v-if="!editMode">
+          <BaseBtn variant="ghost" class="text-sm py-1" @click="enterEditMode"
+            >Edit</BaseBtn
+          >
+        </div>
+        <div v-else class="flex gap-2">
+          <BaseBtn variant="secondary" class="text-sm py-1" @click="cancelEdit"
+            >Cancel</BaseBtn
+          >
+          <BaseBtn variant="primary" class="text-sm py-1" @click="saveEdit"
+            >Save</BaseBtn
+          >
+        </div>
+      </div>
+
       <WorkoutPlanCard
-        v-for="(plan, i) in store.program"
+        v-for="plan in store.program"
         :key="plan.workoutPlanId"
         :plan="plan"
-        :exes="getExes(allPlanExIds(i))"
+        :edit-mode="editMode"
+        @delete="handleDeletePlan"
       />
-    </template>
 
-    <template v-else-if="singlePlanWorkouts">
-      <WorkoutCard
-        v-for="(workout, i) in singlePlanWorkouts"
-        :key="workout.workoutId"
-        :workout="workout"
-        :number="i + 1"
-        :exes="getExes(workout.exes.map((e) => e.exId))"
-      />
+      <button
+        v-if="editMode"
+        @click="addPlan"
+        class="mt-2 w-full py-4 text-3xl font-bold text-blue-900 border-2 border-dashed border-blue-900 rounded-xl"
+      >
+        +
+      </button>
     </template>
   </div>
 </template>
