@@ -5,8 +5,8 @@ import { resolve } from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: "/fitapp/",
+export default defineConfig(({ command }) => ({
+  base: command === "build" ? "/fitapp/" : "/",
   plugins: [
     vue(),
     tailwindcss(),
@@ -43,4 +43,4 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
     },
   },
-});
+}));
