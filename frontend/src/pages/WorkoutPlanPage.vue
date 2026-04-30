@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import { mockWorkoutPlans } from "@/mock-data/workouts";
   import { mockExes } from "@/mock-data/exes";
   import WorkoutCard from "@/components/workout-cards/WorkoutCard.vue";
   import { useMainStore } from "@/stores/mainStore";
