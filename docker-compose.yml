@@ -17,7 +17,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgres://fitapp_user:fitapp_password@postgres:5432/fitapp_db
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
     ports:
       - "127.0.0.1:3101:3000"
     depends_on:
@@ -28,9 +28,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: fitapp_db
-      POSTGRES_USER: fitapp_user
-      POSTGRES_PASSWORD: fitapp_password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
