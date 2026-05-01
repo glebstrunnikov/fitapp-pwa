@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useMainStore } from "@/stores/mainStore";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import HomePage from "@/pages/HomePage.vue";
 import WorkoutPlanPage from "@/pages/WorkoutPlanPage.vue";
@@ -22,36 +23,43 @@ const router = createRouter({
           path: "home",
           name: "home",
           component: HomePage,
+          meta: { requiresAuth: true },
         },
         {
           path: "workout-plan/:id",
           name: "workout-plan",
           component: WorkoutPlanPage,
+          meta: { requiresAuth: true },
         },
         {
           path: "workout/:id",
           name: "workout",
           component: WorkoutPage,
+          meta: { requiresAuth: true },
         },
         {
           path: "exes",
           name: "exes",
           component: ExesPage,
+          meta: { requiresAuth: true },
         },
         {
           path: "ex/create",
           name: "ex-create",
           component: ExFormPage,
+          meta: { requiresAuth: true },
         },
         {
           path: "ex/:id/edit",
           name: "ex-edit",
           component: ExFormPage,
+          meta: { requiresAuth: true },
         },
         {
           path: "settings",
           name: "settings",
           component: SettingsPage,
+          meta: { requiresAuth: true },
         },
         {
           path: "login",
@@ -71,6 +79,15 @@ const router = createRouter({
       ],
     },
   ],
+});
+
+router.beforeEach(async (to) => {
+  const store = useMainStore();
+  if (!store.authInitialized) await store.checkSession();
+
+  if (to.meta.requiresAuth && !store.user) return { name: "login" };
+  if ((to.name === "login" || to.name === "register") && store.user)
+    return { name: "home" };
 });
 
 export default router;

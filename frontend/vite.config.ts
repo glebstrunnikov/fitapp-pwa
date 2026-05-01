@@ -43,4 +43,12 @@ export default defineConfig(({ command }) => ({
       "@": resolve(__dirname, "src"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3101",
+        changeOrigin: true,
+      },
+    },
+  },
 }));

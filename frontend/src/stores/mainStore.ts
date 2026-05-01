@@ -1,12 +1,37 @@
 import { WorkoutPlanData } from "@/types/workouts";
 import { Ex } from "@/types/exes";
+import type { User } from "@/types/auth";
 import { defineStore } from "pinia";
 import { ref, watch, nextTick } from "vue";
 import { mockWorkoutPlans } from "../mock-data/workouts";
 import { mockExes } from "../mock-data/exes";
-import { getAllExes, getAllProgram, putAllProgram } from "./idb";
+import { getAllExes, getAllProgram, putAllProgram, putAllExes } from "./idb";
+import { apiGetMe, apiLogin, apiRegister, apiLogout } from "@/api";
 
 export const useMainStore = defineStore("main", () => {
+  // --- auth state ---
+  const user = ref<User | null>(null);
+  const authInitialized = ref(false);
+
+  async function checkSession(): Promise<void> {
+    user.value = await apiGetMe();
+    authInitialized.value = true;
+  }
+
+  async function login(email: string, password: string): Promise<void> {
+    user.value = await apiLogin(email, password);
+  }
+
+  async function register(email: string, password: string): Promise<void> {
+    user.value = await apiRegister(email, password);
+  }
+
+  async function logout(): Promise<void> {
+    await apiLogout();
+    user.value = null;
+  }
+
+  // --- workout / ex state ---
   const program = ref<WorkoutPlanData[] | null>(null);
   const exes = ref<Ex[] | null>(null);
   const programChanged = ref(false);
@@ -54,7 +79,31 @@ export const useMainStore = defineStore("main", () => {
     return ex;
   }
 
+  async function saveEx(ex: Ex): Promise<void> {
+    if (!exes.value) return;
+    const idx = exes.value.findIndex((e) => e.id === ex.id);
+    if (idx !== -1) {
+      exes.value[idx] = ex;
+    } else {
+      exes.value.push(ex);
+    }
+    await putAllExes(exes.value);
+  }
+
+  async function removeEx(id: string): Promise<void> {
+    if (!exes.value) return;
+    const idx = exes.value.findIndex((e) => e.id === id);
+    if (idx !== -1) exes.value.splice(idx, 1);
+    await putAllExes(exes.value);
+  }
+
   return {
+    user,
+    authInitialized,
+    checkSession,
+    login,
+    register,
+    logout,
     program,
     exes,
     programChanged,
@@ -62,5 +111,7 @@ export const useMainStore = defineStore("main", () => {
     saveProgram,
     workoutPlanIdByWorkoutId,
     getExById,
+    saveEx,
+    removeEx,
   };
 });

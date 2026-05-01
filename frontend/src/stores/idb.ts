@@ -54,3 +54,12 @@ export async function putAllProgram(plans: WorkoutPlanData[]): Promise<void> {
   const raw = structuredClone(toRaw(plans));
   await db.put("program", { id: PROGRAM_KEY, data: raw });
 }
+
+export async function putAllExes(exes: Ex[]): Promise<void> {
+  const db = await getDB();
+  const raw = structuredClone(toRaw(exes));
+  const tx = db.transaction("exes", "readwrite");
+  await tx.store.clear();
+  await Promise.all(raw.map((ex) => tx.store.put(ex)));
+  await tx.done;
+}

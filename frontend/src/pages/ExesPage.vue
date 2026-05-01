@@ -9,6 +9,13 @@
 
 <template>
   <div class="flex flex-col gap-3 p-4">
+    <button
+      @click="router.back()"
+      class="self-start text-sm font-semibold text-blue-900 mb-1"
+    >
+      ← Back
+    </button>
+
     <template v-if="store.exes === null">
       <p class="text-center text-gray-400 mt-8">Loading…</p>
     </template>

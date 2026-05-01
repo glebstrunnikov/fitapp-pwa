@@ -14,9 +14,7 @@
   const router = useRouter();
 
   function handleRemove() {
-    if (!store.exes) return;
-    const idx = store.exes.findIndex((e) => e.id === props.ex.id);
-    if (idx !== -1) store.exes.splice(idx, 1);
+    store.removeEx(props.ex.id);
   }
 
   function handleEdit() {
