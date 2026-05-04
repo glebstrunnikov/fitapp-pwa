@@ -3,9 +3,8 @@ import { Ex } from "@/types/exes";
 import type { User } from "@/types/auth";
 import { defineStore } from "pinia";
 import { ref, watch, nextTick } from "vue";
-import { mockWorkoutPlans } from "../mock-data/workouts";
 import { mockExes } from "../mock-data/exes";
-import { getAllExes, getAllProgram, putAllProgram, putAllExes } from "./idb";
+import { getAllExes, putAllProgram, putAllExes } from "./idb";
 import {
   apiGetMe,
   apiLogin,
