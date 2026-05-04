@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '../../generated/prisma';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateExDto, UpdateExDto } from './ex-list.dto';
 
 @Injectable()
 export class ExListService {
@@ -10,21 +11,15 @@ export class ExListService {
     return this.prisma.ex.findMany();
   }
 
-  create(data: { name: string; description?: string; videoUrl?: string }) {
+  create(data: CreateExDto) {
     return this.prisma.ex.create({ data });
   }
 
-  async update(
-    id: string,
-    data: { name?: string; description?: string; videoUrl?: string },
-  ) {
+  async update(id: string, data: UpdateExDto) {
     try {
       return await this.prisma.ex.update({ where: { id }, data });
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2025'
-      )
+      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025')
         return null;
       throw e;
     }
@@ -34,10 +29,7 @@ export class ExListService {
     try {
       return await this.prisma.ex.delete({ where: { id } });
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2025'
-      )
+      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025')
         return null;
       throw e;
     }

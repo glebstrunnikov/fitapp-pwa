@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { WorkoutPlanDataDto } from './user-data.dto';
 
 @Injectable()
 export class UserDataService {
@@ -13,10 +14,10 @@ export class UserDataService {
     return user?.userData ?? [];
   }
 
-  async save(userId: string, data: unknown[]) {
+  async save(userId: string, data: WorkoutPlanDataDto[]) {
     await this.prisma.user.update({
       where: { id: userId },
-      data: { userData: data },
+      data: { userData: data as object[] },
     });
     return { ok: true };
   }

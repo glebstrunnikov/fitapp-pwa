@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { SessionGuard } from '../auth/session.guard';
 import { ExListService } from './ex-list.service';
+import { CreateExDto, UpdateExDto } from './ex-list.dto';
 
 @Controller('exes')
 export class ExListController {
@@ -23,18 +24,13 @@ export class ExListController {
 
   @Post()
   @UseGuards(SessionGuard)
-  create(
-    @Body() body: { name: string; description?: string; videoUrl?: string },
-  ) {
+  create(@Body() body: CreateExDto) {
     return this.exListService.create(body);
   }
 
   @Patch(':id')
   @UseGuards(SessionGuard)
-  async update(
-    @Param('id') id: string,
-    @Body() body: { name?: string; description?: string; videoUrl?: string },
-  ) {
+  async update(@Param('id') id: string, @Body() body: UpdateExDto) {
     const ex = await this.exListService.update(id, body);
     if (!ex) throw new NotFoundException();
     return ex;
