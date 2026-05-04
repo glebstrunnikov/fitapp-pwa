@@ -6,7 +6,14 @@ import { ref, watch, nextTick } from "vue";
 import { mockWorkoutPlans } from "../mock-data/workouts";
 import { mockExes } from "../mock-data/exes";
 import { getAllExes, getAllProgram, putAllProgram, putAllExes } from "./idb";
-import { apiGetMe, apiLogin, apiRegister, apiLogout } from "@/api";
+import {
+  apiGetMe,
+  apiLogin,
+  apiRegister,
+  apiLogout,
+  apiSaveProgram,
+  apiLoadProgram,
+} from "@/api";
 
 export const useMainStore = defineStore("main", () => {
   // --- auth state ---
@@ -35,6 +42,7 @@ export const useMainStore = defineStore("main", () => {
   const program = ref<WorkoutPlanData[] | null>(null);
   const exes = ref<Ex[] | null>(null);
   const programChanged = ref(false);
+  const programSaving = ref(false);
 
   watch(
     program,
@@ -45,13 +53,13 @@ export const useMainStore = defineStore("main", () => {
   );
 
   async function init() {
-    const [storedExes, storedProgram] = await Promise.all([
+    const [storedExes, loadedProgram] = await Promise.all([
       getAllExes(),
-      getAllProgram(),
+      apiLoadProgram(),
     ]);
 
     exes.value = storedExes.length ? storedExes : mockExes;
-    program.value = storedProgram.length ? storedProgram : mockWorkoutPlans;
+    program.value = loadedProgram;
 
     // Reset flag after the watcher fires from the initial assignment
     await nextTick();
@@ -62,6 +70,9 @@ export const useMainStore = defineStore("main", () => {
     if (!program.value) return;
     await putAllProgram(program.value);
     programChanged.value = false;
+    programSaving.value = true;
+    await apiSaveProgram(program.value);
+    programSaving.value = false;
   }
 
   function workoutPlanIdByWorkoutId(workoutId: string): string | undefined {
@@ -107,6 +118,7 @@ export const useMainStore = defineStore("main", () => {
     program,
     exes,
     programChanged,
+    programSaving,
     init,
     saveProgram,
     workoutPlanIdByWorkoutId,

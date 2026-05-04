@@ -15,4 +15,12 @@ model User {
   email        String   @unique
   passwordHash String
   createdAt    DateTime @default(now())
+  userData     Json?
+}
+
+model Ex {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  videoUrl    String?
 }

@@ -95,4 +95,11 @@
       Save
     </BaseBtn>
   </div>
+
+  <div
+    v-if="store.programSaving"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+  >
+    <van-loading size="40" color="#fff" />
+  </div>
 </template>
