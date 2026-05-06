@@ -12,6 +12,10 @@ import {
   apiLogout,
   apiSaveProgram,
   apiLoadProgram,
+  apiGetExes,
+  apiCreateEx,
+  apiUpdateEx,
+  apiDeleteEx,
 } from "@/api";
 
 export const useMainStore = defineStore("main", () => {
@@ -52,12 +56,20 @@ export const useMainStore = defineStore("main", () => {
   );
 
   async function init() {
-    const [storedExes, loadedProgram] = await Promise.all([
-      getAllExes(),
+    const [fetchedExes, loadedProgram] = await Promise.all([
+      apiGetExes()
+        .then(async (serverExes) => {
+          await putAllExes(serverExes);
+          return serverExes;
+        })
+        .catch(async () => {
+          const cached = await getAllExes();
+          return cached.length ? cached : mockExes;
+        }),
       apiLoadProgram(),
     ]);
 
-    exes.value = storedExes.length ? storedExes : mockExes;
+    exes.value = fetchedExes;
     program.value = loadedProgram;
 
     // Reset flag after the watcher fires from the initial assignment
@@ -93,15 +105,20 @@ export const useMainStore = defineStore("main", () => {
     if (!exes.value) return;
     const idx = exes.value.findIndex((e) => e.id === ex.id);
     if (idx !== -1) {
-      exes.value[idx] = ex;
+      const { id, ...fields } = ex;
+      const updated = await apiUpdateEx(id, fields);
+      exes.value[idx] = updated;
     } else {
-      exes.value.push(ex);
+      const { id: _, ...fields } = ex;
+      const created = await apiCreateEx(fields);
+      exes.value.push(created);
     }
     await putAllExes(exes.value);
   }
 
   async function removeEx(id: string): Promise<void> {
     if (!exes.value) return;
+    await apiDeleteEx(id);
     const idx = exes.value.findIndex((e) => e.id === id);
     if (idx !== -1) exes.value.splice(idx, 1);
     await putAllExes(exes.value);

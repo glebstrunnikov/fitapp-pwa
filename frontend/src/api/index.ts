@@ -1,5 +1,6 @@
 import type { User } from "@/types/auth";
 import type { WorkoutPlanData } from "@/types/workouts";
+import type { Ex } from "@/types/exes";
 import { getAllProgram, putAllProgram } from "@/stores/idb";
 
 const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "/api";
@@ -54,6 +55,40 @@ export async function apiRegister(
 
 export async function apiLogout(): Promise<void> {
   await apiFetch("/auth/logout", { method: "POST" });
+}
+
+// --- exes ---
+
+export async function apiGetExes(): Promise<Ex[]> {
+  const res = await apiFetch("/exes");
+  if (!res.ok) throw new Error("Failed to fetch exes");
+  return res.json();
+}
+
+export async function apiCreateEx(ex: Omit<Ex, "id">): Promise<Ex> {
+  const res = await apiFetch("/exes", {
+    method: "POST",
+    body: JSON.stringify(ex),
+  });
+  if (!res.ok) throw new Error("Failed to create ex");
+  return res.json();
+}
+
+export async function apiUpdateEx(
+  id: string,
+  ex: Partial<Omit<Ex, "id">>,
+): Promise<Ex> {
+  const res = await apiFetch(`/exes/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(ex),
+  });
+  if (!res.ok) throw new Error("Failed to update ex");
+  return res.json();
+}
+
+export async function apiDeleteEx(id: string): Promise<void> {
+  const res = await apiFetch(`/exes/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete ex");
 }
 
 // --- program sync ---
