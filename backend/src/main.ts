@@ -8,6 +8,13 @@ import { Pool } from 'pg';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  app.enableCors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? 'https://glebstrunnikov.com'
+        : 'http://localhost:5173',
+    credentials: true,
+  });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
   const PgStore = connectPgSimple(session);
